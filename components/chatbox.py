@@ -2,10 +2,12 @@ import streamlit as st
 
 from utils.ollama import chat, context_chat
 
-
+from deep_translator import GoogleTranslator
+translator = GoogleTranslator(source='auto', target='ja')
 def chatbox():
     if prompt := st.chat_input("How can I help?"):
         # Prevent submission if Ollama endpoint is not set
+        translated = translator.translate(prompt)
         if not st.session_state["query_engine"]:
             st.warning("Please confirm settings and upload files before proceeding.")
             st.stop()
@@ -23,9 +25,9 @@ def chatbox():
                     #     prompt=prompt
                     # )
                     context_chat(
-                        prompt=prompt, query_engine=st.session_state["query_engine"]
+                        prompt=translated, query_engine=st.session_state["query_engine"]
                     )
                 )
 
         # Add the final response to messages state
-        st.session_state["messages"].append({"role": "assistant", "content": response})
+        st.session_state["messages"].append({"role": "assistant", "content": translator.translate(response)})
