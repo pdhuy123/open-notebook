@@ -6,7 +6,9 @@ import utils.ollama as ollama
 
 from datetime import datetime
 
+import os, shutil
 
+import utils.rag_pipeline as rag
 def settings():
     st.header("Settings")
     st.caption("Configure Local RAG settings and integrations")
@@ -72,6 +74,7 @@ def settings():
                 "Default (bge-large-en-v1.5)",
                 "Large (Salesforce/SFR-Embedding-Mistral)",
                 "paraphrase-multilingual-MiniLM-L12-v2",
+                "RoSEtta-base-ja",
                 "Other",
             ],
             key="embedding_model",
@@ -100,7 +103,45 @@ def settings():
                 placeholder="200",
                 value=st.session_state["chunk_overlap"],
             )
+    st.session_state["use_uploaded_vectordb"] = False
+    st.subheader("Vector Databases", help="Vector databases store and manage embeddings, enabling efficient similarity searches and retrieval of relevant data based on semantic meaning.")
+    vectorstore_settings = st.container(border=True)
+    with vectorstore_settings:
+        st.write("VectorStore Path")
 
+        default_path = "./vectordb"
+        uploaded_folder = st.file_uploader(
+            "Upload your VectorDB files",
+            type=["faiss", "pkl", "json", "bin", "idx", "npy"],
+            accept_multiple_files=True
+        )
+
+        # Allow user to reset vectorstore to default
+        if st.button("Reset to Default VectorStore"):
+            st.session_state["vectorstore_path"] = default_path
+            st.success(f"Vectorstore path set to default: `{default_path}`")
+
+        # If uploaded files, save to ./uploaded_vectordb and use that path
+        if uploaded_folder:
+            uploaded_path = "./vectordb"
+            os.makedirs(uploaded_path, exist_ok=True)
+
+            for file in uploaded_folder:
+                with open(os.path.join(uploaded_path, file.name), "wb") as f:
+                    f.write(file.read())
+
+            st.session_state["vectorstore_path"] = uploaded_path
+            st.success(f"Vectorstore uploaded and set to: `{uploaded_path}`")
+            error = rag.rag_pipeline(None)
+
+            # Display errors (if any) or proceed
+            if error is not None:
+                st.exception(error)
+            st.session_state["use_uploaded_vectordb"] = True
+        # Hiển thị path đang được dùng
+        current_path = st.session_state.get("vectorstore_path", default_path)
+        st.info(f"Using vectorstore from: `{current_path}`")
+        
     st.subheader("Export Data")
     export_data_settings = st.container(border=True)
     with export_data_settings:

@@ -14,9 +14,10 @@ from llama_index.core import (
     VectorStoreIndex,
     SimpleDirectoryReader,
     Settings,
+    StorageContext,
+    load_index_from_storage
 )
-
-
+from llama_index.core.vector_stores import SimpleVectorStore
 
 ###################################
 #
@@ -178,11 +179,14 @@ def create_index(_documents):
     """
 
     try:
-        index = VectorStoreIndex.from_documents(
-            documents=_documents, show_progress=True
-        )
+        # vector_store = SimpleVectorStore()
+        # storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
+        index = VectorStoreIndex.from_documents(
+            documents=_documents, show_progress=True,
+        )
         logs.log.info("Index created from loaded documents successfully")
+        # logs.log.info("Index created and saved successfully")
 
         return index
     except Exception as err:
@@ -217,7 +221,15 @@ def create_query_engine(_documents):
         This function uses the `create_index` function to create an index from the provided documents and service context, and then creates a query engine from the resulting index. The `query_engine` parameter is used to specify the parameters of the query engine, including the number of top-ranked items to return (`similarity_top_k`) and the response mode (`response_mode`).
     """
     try:
-        index = create_index(_documents)
+        if _documents:
+            index = create_index(_documents)
+        else:
+            vectordb_path = st.session_state.get("vectordb_path", "./vectordb")
+            if not os.path.exists(vectordb_path):
+                raise Exception(f"VectorDB folder '{vectordb_path}' does not exist.")
+
+            storage_context = StorageContext.from_defaults(persist_dir=vectordb_path)
+            index = load_index_from_storage(storage_context)
 
         query_engine = index.as_query_engine(
             similarity_top_k=st.session_state["top_k"],

@@ -90,6 +90,10 @@ def rag_pipeline(uploaded_files: list = None):
 
     if embedding_model == "paraphrase-multilingual-MiniLM-L12-v2":
         hf_embedding_model = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+
+    if embedding_model == "RoSEtta-base-ja":
+        hf_embedding_model = "pkshatech/RoSEtta-base-ja"
+    
     if embedding_model == "Other":
         hf_embedding_model = st.session_state["other_embedding_model"]
 
@@ -109,23 +113,24 @@ def rag_pipeline(uploaded_files: list = None):
     #######################################
 
     # if documents already exists in state
-    if (
-        st.session_state["documents"] is not None
-        and len(st.session_state["documents"]) > 0
-    ):
-        logs.log.info("Documents are already available; skipping document loading")
-        st.caption("✔️ Processed File Data")
-    else:
-        try:
-            save_dir = os.getcwd() + "/data"
-            documents = llama_index.load_documents(save_dir)
-            st.session_state["documents"] = documents
-            st.caption("✔️ Data Processed")
-        except Exception as err:
-            logs.log.error(f"Document Load Error: {str(err)}")
-            error = err
-            st.exception(error)
-            st.stop()
+    if uploaded_files:
+        if (
+            st.session_state["documents"] is not None
+            and len(st.session_state["documents"]) > 0
+        ):
+            logs.log.info("Documents are already available; skipping document loading")
+            st.caption("✔️ Processed File Data")
+        else:
+            try:
+                save_dir = os.getcwd() + "/data"
+                documents = llama_index.load_documents(save_dir)
+                st.session_state["documents"] = documents
+                st.caption("✔️ Data Processed")
+            except Exception as err:
+                logs.log.error(f"Document Load Error: {str(err)}")
+                error = err
+                st.exception(error)
+                st.stop()
 
     ###########################################
     # Create an index from ingested documents #
@@ -142,13 +147,16 @@ def rag_pipeline(uploaded_files: list = None):
         st.exception(error)
         st.stop()
 
+    return error  # If no errors occurred, None is returned
+
+def clear_session_state():
     #####################
     # Remove data files #
     #####################
 
     if len(st.session_state["file_list"]) > 0:
         try:
-            save_dir = os.getcwd() + "/data"
+            save_dir = os.getcwd() + "/data/"
             shutil.rmtree(save_dir)
             st.caption("✔️ Removed Temp Files")
         except Exception as err:
@@ -156,5 +164,3 @@ def rag_pipeline(uploaded_files: list = None):
                 f"Unable to delete data files, you may want to clean-up manually: {str(err)}"
             )
             pass
-
-    return error  # If no errors occurred, None is returned
