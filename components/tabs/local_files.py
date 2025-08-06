@@ -46,10 +46,8 @@ def local_files():
         st.session_state["file_list"] = uploaded_files
 
         with st.spinner("Processing..."):
-            # Initiate the RAG pipeline, providing documents to be saved on disk if necessary
             error = rag.rag_pipeline(uploaded_files)
 
-            # Display errors (if any) or proceed
             if error is not None:
                 st.exception(error)
             else:

@@ -190,15 +190,16 @@ def context_chat(prompt: str, query_engine: RetrieverQueryEngine):
         stream = query_engine.query(prompt)
 
         # In nguồn tài liệu được dùng
-        print("\n📚 Nguồn được sử dụng:")
-        for i, node in enumerate(stream.source_nodes, 1):
-            print(f"\n--- Nguồn #{i} ---")
-            print("🔹 Nội dung:", node.node.text[:500], "...")
-            print("📄 Metadata:", node.node.metadata)
-            
-        for text in stream.response_gen:
-            # print(str(text), end="", flush=True)
-            yield str(text)
+        # print("\n📚 Nguồn được sử dụng:")
+        # for i, node in enumerate(stream.source_nodes, 1):
+        #     print(f"\n--- Nguồn #{i} ---")
+        #     print("🔹 Nội dung:", node.node.text[:500], "...")
+        #     print("📄 Metadata:", node.node.metadata)
+
+        # for text in stream.response_gen:
+        #     # print(str(text), end="", flush=True)
+        #     yield str(text)
+        return stream.response_gen, stream.source_nodes
     except Exception as err:
         logs.log.error(f"Ollama chat stream error: {err}")
         return

@@ -90,9 +90,6 @@ def rag_pipeline(uploaded_files: list = None):
 
     if embedding_model == "paraphrase-multilingual-MiniLM-L12-v2":
         hf_embedding_model = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-
-    if embedding_model == "RoSEtta-base-ja":
-        hf_embedding_model = "pkshatech/RoSEtta-base-ja"
     
     if embedding_model == "Other":
         hf_embedding_model = st.session_state["other_embedding_model"]

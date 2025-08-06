@@ -74,7 +74,6 @@ def settings():
                 "Default (bge-large-en-v1.5)",
                 "Large (Salesforce/SFR-Embedding-Mistral)",
                 "paraphrase-multilingual-MiniLM-L12-v2",
-                "RoSEtta-base-ja",
                 "Other",
             ],
             key="embedding_model",
